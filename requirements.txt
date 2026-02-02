@@ -1,5 +1,2 @@
 streamlit
 google-generativeai
-moviepy
-streamlit
-google-generativeai
