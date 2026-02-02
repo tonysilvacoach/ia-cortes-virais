@@ -2,96 +2,69 @@ import streamlit as st
 import subprocess
 import os
 
-# --- CONFIGURAÇÕES DE ESTILO (CSS) ---
-st.set_page_config(page_title="CorteViral PRO - IA Video Editor", layout="wide")
+# --- ESTILO VIRALCUT AI (DARK MODE PROFISSIONAL) ---
+st.set_page_config(page_title="ViralCut Pro - Dashboard", layout="wide")
 
 st.markdown("""
     <style>
-    .main {
-        background-color: #0E1117;
-        color: #FFFFFF;
+    .main { background-color: #050505; color: white; }
+    .glass-card {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 24px;
+        padding: 25px;
     }
     .stButton>button {
-        width: 100%;
-        border-radius: 10px;
-        height: 3em;
-        background-color: #FF4B4B;
-        color: white;
-        border: none;
-        font-weight: bold;
+        background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+        border: none; border-radius: 15px; color: white; font-weight: bold;
     }
-    .stTextInput>div>div>input {
-        border-radius: 10px;
-    }
-    .upload-box {
-        border: 2px dashed #4F8BF9;
-        padding: 20px;
-        border-radius: 15px;
-        text-align: center;
-    }
-    .sidebar .sidebar-content {
-        background-image: linear-gradient(#2e7bcf,#2e7bcf);
-        color: white;
-    }
+    .sidebar .sidebar-content { background-color: #0a0a0a; }
     </style>
     """, unsafe_allow_html=True)
 
-# --- LÓGICA DE NEGÓCIO ---
+# --- CONFIGURAÇÕES DE ACESSO ---
 PROPRIETARIO = "niltonrosa71@gmail.com"
 
-# Sidebar com Branding
 with st.sidebar:
-    st.image("https://cdn-icons-png.flaticon.com/512/3669/3669914.png", width=100) # Ícone Pro
-    st.title("CorteViral PRO")
+    st.markdown("<h1 style='color: #6366f1;'>VIRAL<span style='color:white'>LAB</span></h1>", unsafe_allow_html=True)
     st.write("---")
-    email = st.text_input("👤 Login de Usuário", placeholder="seu@email.com")
+    email = st.text_input("🔑 Login de Acesso", placeholder="seu@email.com")
 
-# Corpo Principal
 if email:
-    if email.lower() == PROPRIETARIO.lower():
-        st.markdown(f"### 👑 Painel do Proprietário")
-        st.success("Acesso Ilimitado Liberado para Nilton Rosa.")
-        limite = 15 
-        plano = "PRO"
-    else:
-        st.markdown(f"### 🚀 Dashboard de Edição")
-        st.info("Plano: Gratuito (1 corte de teste)")
-        limite = 1
-        plano = "FREE"
-
-    col1, col2 = st.columns([1, 1])
-
+    is_admin = email.lower() == PROPRIETARIO.lower()
+    
+    # Header Estilo SaaS
+    st.markdown(f"## Video <span style='color:#a855f7'>Power Studio</span>", unsafe_allow_html=True)
+    
+    col1, col2 = st.columns([2, 1])
+    
     with col1:
-        st.markdown("#### 📤 1. Carregar Conteúdo")
-        upload = st.file_uploader("", type=["mp4", "mov"])
-        
+        st.markdown("<div class='glass-card'>", unsafe_allow_html=True)
+        upload = st.file_uploader("Upload do Vídeo Original", type=["mp4", "mov"])
+        if is_admin:
+            st.success("👑 Acesso Ilimitado Nilton Rosa")
+        st.markdown("</div>", unsafe_allow_html=True)
+
     with col2:
-        st.markdown("#### 🛠️ 2. Configurações")
-        st.write(f"Cortes a serem gerados: **{limite}**")
-        st.write(f"Formato: **9:16 (TikTok/Reels/Shorts)**")
+        st.markdown("<div class='glass-card'>", unsafe_allow_html=True)
+        st.write("📈 **Status da Conta**")
+        st.write(f"Plano: {'PRO Ilimitado' if is_admin else 'Gratuito'}")
+        num_cortes = 15 if is_admin else 1
+        st.markdown("</div>", unsafe_allow_html=True)
 
     if upload:
-        with open("video_input.mp4", "wb") as f:
+        with open("temp.mp4", "wb") as f:
             f.write(upload.getbuffer())
         
-        if st.button("✨ GERAR CORTES VIRAIS AGORA"):
-            # Barra de progresso profissional
-            progresso = st.progress(0)
-            for i in range(limite):
-                inicio = i * 60
+        if st.button("🚀 INICIAR INTELIGÊNCIA DE CORTE"):
+            for i in range(num_cortes):
                 saida = f"corte_{i+1}.mp4"
-                
-                # Motor FFmpeg Blindado
-                comando = f'ffmpeg -y -ss {inicio} -t 59 -i video_input.mp4 -vf "crop=ih*(9/16):ih,scale=1080:1920" -c:v libx264 -pix_fmt yuv420p -c:a aac -movflags +faststart {saida}'
+                # Motor FFmpeg profissional corrigido
+                comando = f'ffmpeg -y -ss {i*60} -t 59 -i temp.mp4 -vf "crop=ih*(9/16):ih,scale=1080:1920" -c:v libx264 -pix_fmt yuv420p -c:a aac -movflags +faststart {saida}'
                 subprocess.run(comando, shell=True)
                 
-                progresso.progress((i + 1) / limite)
-                st.write(f"✅ Corte {i+1} finalizado!")
-                
-                with open(saida, "rb") as f:
-                    st.download_button(f"📥 Baixar Corte {i+1}", f, file_name=saida)
-            
-            st.balloons()
-            st.success("Todos os vídeos foram processados com sucesso!")
+                with st.expander(f"✅ Corte {i+1} Finalizado"):
+                    with open(saida, "rb") as f:
+                        st.download_button(f"Download MP4", f, file_name=saida)
 else:
-    st.warning("⚠️ Por favor, faça login com seu e-mail para desbloquear a ferramenta.")
+    st.warning("⚠️ Identifique-se para acessar o Power Studio.")
