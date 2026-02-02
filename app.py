@@ -1,60 +1,94 @@
 import streamlit as st
-import google.generativeai as genai
 import subprocess
 import os
 
-# --- INTERFACE VEO 3 PREMIUM ---
-st.set_page_config(page_title="ViralCut AI - Veo Multimedia Studio", layout="wide")
+# --- CONFIGURAÇÃO VISUAL PREMIUM (Estilo Dashboard enviado) ---
+st.set_page_config(page_title="ViralCut AI PRO", layout="wide")
 
 st.markdown("""
     <style>
-    .stApp { background-color: #050505; color: #e0e0e0; font-family: 'Inter', sans-serif; }
-    .veo-card { background: #0f0f0f; border: 1px solid #1f1f1f; padding: 25px; border-radius: 4px; }
-    .main-title { font-weight: 300; font-size: 2.5rem; color: #ffffff; letter-spacing: -1px; text-align: center; }
-    .stButton>button { background-color: #ffffff; color: #000; border-radius: 2px; font-weight: 600; width: 100%; height: 3.5rem; }
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
+    .stApp { background-color: #0d0d0d; color: #ffffff; font-family: 'Inter', sans-serif; }
+    
+    .main-title { background: linear-gradient(90deg, #4f8bf9, #ec4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-size: 2.5rem; font-weight: 800; text-align: center; }
+    
+    .dashboard-card { background: #1a1a1a; border: 1px solid #333; padding: 20px; border-radius: 12px; text-align: center; height: 100%; }
+    
+    .stButton>button { background: linear-gradient(90deg, #6366f1, #a855f7); color: white; border: none; border-radius: 8px; font-weight: 600; width: 100%; height: 3.5rem; }
+    
+    .upgrade-section { background: #1e1e1e; padding: 25px; border-radius: 15px; border-left: 5px solid #ec4899; margin-top: 30px; text-align: center; }
     </style>
 """, unsafe_allow_html=True)
 
-# --- CONFIGURAÇÃO DE ACESSO VIP ---
+# --- LOGIN E SEGURANÇA ---
 PROPRIETARIO = "niltonrosa71@gmail.com"
 
 with st.sidebar:
-    st.markdown("### VIRALCUT **VEO**")
-    email = st.text_input("Identidade", placeholder="seu@email.com")
-    is_admin = (email.lower() == PROPRIETARIO.lower()) if email else False
+    st.markdown("<h2 style='color: #a855f7;'>Configurações</h2>", unsafe_allow_html=True)
+    user_email = st.text_input("👤 E-mail de Login", placeholder="seu@email.com")
+    st.write("---")
+    is_admin = user_email.lower() == PROPRIETARIO.lower() if user_email else False
 
-if email:
-    st.markdown("<div class='main-title'>Laboratório de Criação Multimídia</div>", unsafe_allow_html=True)
+# --- INTERFACE PRINCIPAL ---
+if user_email:
+    st.markdown('<div class="main-title">ViralCut AI PRO - Dashboard</div>', unsafe_allow_html=True)
+    st.markdown("<p style='text-align:center; color:#94a3b8;'>Transforme vídeos longos em conteúdo viral com IA</p>", unsafe_allow_html=True)
+
+    # Cards de Status (Igual à imagem)
+    col1, col2, col3 = st.columns(3)
+    with col1: st.markdown(f'<div class="dashboard-card"><p>Plano</p><h3 style="color:#a855f7;">{"PRO / MASTER" if is_admin else "Gratuito"}</h3></div>', unsafe_allow_html=True)
+    with col2: st.markdown('<div class="dashboard-card"><p>Formato</p><h3 style="color:#6366f1;">9:16 Vertical</h3></div>', unsafe_allow_html=True)
+    with col3: st.markdown('<div class="dashboard-card"><p>Status</p><h3 style="color:#22c55e;">Online</h3></div>', unsafe_allow_html=True)
+
+    st.write("---")
     
-    tab1, tab2, tab3 = st.tabs(["🎥 Vídeo para Cortes", "🖼️ Imagem para Vídeo", "🎙️ Texto/Áudio para Vídeo"])
+    left_c, right_c = st.columns([1.5, 1])
+    with left_c:
+        st.markdown("### 📥 Carregar Vídeo")
+        video_up = st.file_uploader("", type=["mp4", "mov", "mpeg"])
+    with right_c:
+        st.markdown("### ⚙️ Opções")
+        limite = 20 if is_admin else 1
+        qtd = st.slider("Quantidade de cortes", 1, limite, 1)
 
-    with tab1:
-        st.markdown("### Transformação de Vídeos Longos")
-        v_file = st.file_uploader("Upload MP4/MOV", type=["mp4", "mov"])
-        if v_file and st.button("GERAR CORTES VIRAIS"):
-            # Lógica blindada de processamento
-            input_p = os.path.join(os.getcwd(), "input.mp4")
-            with open(input_p, "wb") as f: f.write(v_file.getbuffer())
-            
-            output_p = os.path.join(os.getcwd(), "output_veo.mp4")
-            # Marca d'água automática para divulgação gratuita
-            filtro = "crop=ih*(9/16):ih,scale=1080:1920" if is_admin else "crop=ih*(9/16):ih,scale=1080:1920,drawtext=text='ViralCut AI':x=w-tw-20:y=h-th-20:fontsize=30:fontcolor=white@0.5"
-            
-            cmd = ['ffmpeg', '-y', '-i', input_p, '-t', '58', '-vf', filtro, '-c:v', 'libx264', '-pix_fmt', 'yuv420p', output_p]
-            subprocess.run(cmd, capture_output=True)
-            
-            if os.path.exists(output_p):
-                st.success("Processamento concluído com sucesso!")
-                with open(output_p, "rb") as f:
-                    st.download_button("📥 Baixar Resultado", f, file_name="corte_veo.mp4")
+    if video_up:
+        input_path = os.path.join(os.getcwd(), "video_input.mp4")
+        with open(input_path, "wb") as f: f.write(video_up.getbuffer())
 
-    with tab2:
-        st.markdown("### Estilo Veo: Imagem Animada")
-        st.info("Utilize imagens para criar cenas dinâmicas.")
-        i_file = st.file_uploader("Upload Foto", type=["jpg", "png"])
-        prompt = st.text_area("Descreva o movimento da cena...")
-        if st.button("ANIMAR COM IA"):
-            st.warning("Integração com API de geração de vídeo em processamento.")
+        if st.button("✨ GERAR CORTES INTELIGENTES"):
+            progresso = st.progress(0)
+            for i in range(qtd):
+                saida = os.path.join(os.getcwd(), f"corte_{i+1}.mp4")
+                inicio = i * 60
+                
+                # COMANDO CORRIGIDO (SEM ERROS DE ASPAS)
+                comando = [
+                    'ffmpeg', '-y', '-ss', str(inicio), '-t', '58',
+                    '-i', input_path,
+                    '-vf', 'crop=ih*(9/16):ih,scale=1080:1920',
+                    '-c:v', 'libx264', '-preset', 'ultrafast', '-pix_fmt', 'yuv420p',
+                    '-c:a', 'aac', '-movflags', '+faststart', saida
+                ]
+                
+                with st.spinner(f"Processando corte {i+1}..."):
+                    subprocess.run(comando, capture_output=True)
+                
+                if os.path.exists(saida):
+                    st.success(f"✅ Corte {i+1} finalizado!")
+                    with open(saida, "rb") as f:
+                        st.download_button(f"Baixar Corte {i+1}", f, file_name=f"corte_{i+1}.mp4", key=f"dl_{i}")
+                
+                progresso.progress((i + 1) / qtd)
+            st.balloons()
 
+    # Seção Upgrade (Igual à imagem)
+    st.markdown("""
+        <div class="upgrade-section">
+            <h2 style="color: #ec4899;">💎 Desbloqueie todo o potencial AI</h2>
+            <p style="color: #94a3b8;">Gere 20 cortes de uma vez e com prioridade na renderização.</p>
+            <br>
+            <button style="background:#ec4899; color:white; border:none; padding:15px 40px; border-radius:10px; font-weight:bold; cursor:pointer;">FAZER UPGRADE AGORA (R$ 49,90)</button>
+        </div>
+    """, unsafe_allow_html=True)
 else:
-    st.info("Autentique-se na barra lateral para acessar o estúdio.")
+    st.info("Por favor, faça login na barra lateral para acessar o sistema.")
