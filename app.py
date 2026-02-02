@@ -3,7 +3,7 @@ import google.generativeai as genai
 import subprocess
 import os
 
-# --- INTERFACE HEYGEN STYLE ---
+# --- INTERFACE HEYGEN / VEO 3 STYLE ---
 st.set_page_config(page_title="VeoLab AI PRO", layout="wide")
 
 st.markdown("""
@@ -15,19 +15,19 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# --- INICIALIZAÇÃO DA IA (FORÇANDO VERSÃO ESTÁVEL) ---
+# --- INICIALIZAÇÃO DA IA (NOME TÉCNICO COMPLETO) ---
 model = None
 if "GEMINI_API_KEY" in st.secrets:
     try:
         genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
-        # Mudança para 'gemini-pro' - O identificador mais estável para evitar erro 404
-        model = genai.GenerativeModel('gemini-pro') 
+        # Usando o identificador técnico completo para evitar erro 404
+        model = genai.GenerativeModel('models/gemini-pro') 
     except Exception as e:
         st.error(f"Erro ao carregar modelo: {e}")
 else:
     st.error("Chave 'GEMINI_API_KEY' não encontrada nos Secrets.")
 
-# --- BARRA LATERAL ---
+# --- SIDEBAR ---
 with st.sidebar:
     st.title("🧪 VeoLab")
     email = st.text_input("Identidade", value="niltonrosa71@gmail.com")
