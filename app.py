@@ -3,7 +3,7 @@ import google.generativeai as genai
 import subprocess
 import os
 
-# --- INTERFACE HEYGEN / VEO 3 STYLE ---
+# --- INTERFACE HEYGEN STYLE ---
 st.set_page_config(page_title="VeoLab AI PRO", layout="wide")
 
 st.markdown("""
@@ -15,19 +15,19 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# --- CONFIGURAÇÃO DA IA (FIX 404 MODELS) ---
+# --- INICIALIZAÇÃO DA IA (FORÇANDO VERSÃO ESTÁVEL) ---
 model = None
 if "GEMINI_API_KEY" in st.secrets:
     try:
         genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
-        # Usando o nome técnico universal para garantir compatibilidade
-        model = genai.GenerativeModel('models/gemini-1.5-flash-latest') 
+        # Mudança para 'gemini-pro' - O identificador mais estável para evitar erro 404
+        model = genai.GenerativeModel('gemini-pro') 
     except Exception as e:
         st.error(f"Erro ao carregar modelo: {e}")
 else:
     st.error("Chave 'GEMINI_API_KEY' não encontrada nos Secrets.")
 
-# --- SIDEBAR ---
+# --- BARRA LATERAL ---
 with st.sidebar:
     st.title("🧪 VeoLab")
     email = st.text_input("Identidade", value="niltonrosa71@gmail.com")
@@ -39,17 +39,17 @@ if menu == "🎬 Criar Vídeo":
     
     with st.container():
         st.markdown('<div class="canvas-container">', unsafe_allow_html=True)
-        prompt = st.text_area("O que a IA deve gerar hoje?", placeholder="Ex: Notícias de Formosa...")
+        prompt = st.text_area("Descreva seu vídeo para a IA...", placeholder="Ex: Notícias de hoje em Formosa...")
         
         if st.button("🚀 GERAR VÍDEO AGORA"):
             if model and prompt:
-                with st.spinner("IA renderizando sua produção..."):
+                with st.spinner("VeoLab renderizando sua produção..."):
                     try:
-                        # Geração do texto pela IA
+                        # Geração do texto (Resolvendo erro 404)
                         res = model.generate_content(f"Descreva em 3 palavras: {prompt}")
                         descricao = res.text.replace("'", "").replace('"', "")[:30]
                         
-                        # Motor FFmpeg (Resolvendo erro Screenshot_31)
+                        # Motor FFmpeg (Resolvendo erro de aspas da Screenshot_19)
                         out = "veolab_prod.mp4"
                         cmd = [
                             "ffmpeg", "-y", "-f", "lavfi", "-i", "color=c=black:s=1280x720:d=5",
