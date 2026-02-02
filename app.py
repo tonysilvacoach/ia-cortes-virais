@@ -2,46 +2,96 @@ import streamlit as st
 import subprocess
 import os
 
-# --- 1. CONFIGURAÇÕES DO PROPRIETÁRIO ---
-# Este é o seu acesso VIP para os canais Notícias New e Habitus Milionário
-PROPRIETARIO_EMAIL = "niltonrosa71@gmail.com" 
+# --- CONFIGURAÇÕES DE ESTILO (CSS) ---
+st.set_page_config(page_title="CorteViral PRO - IA Video Editor", layout="wide")
 
-st.set_page_config(page_title="CorteViral AI - Dashboard", layout="centered")
+st.markdown("""
+    <style>
+    .main {
+        background-color: #0E1117;
+        color: #FFFFFF;
+    }
+    .stButton>button {
+        width: 100%;
+        border-radius: 10px;
+        height: 3em;
+        background-color: #FF4B4B;
+        color: white;
+        border: none;
+        font-weight: bold;
+    }
+    .stTextInput>div>div>input {
+        border-radius: 10px;
+    }
+    .upload-box {
+        border: 2px dashed #4F8BF9;
+        padding: 20px;
+        border-radius: 15px;
+        text-align: center;
+    }
+    .sidebar .sidebar-content {
+        background-image: linear-gradient(#2e7bcf,#2e7bcf);
+        color: white;
+    }
+    </style>
+    """, unsafe_allow_html=True)
 
-# --- 2. ÁREA DE ACESSO ---
-st.title("🎬 CorteViral AI")
-email_usuario = st.text_input("Digite seu e-mail para acessar o sistema:")
+# --- LÓGICA DE NEGÓCIO ---
+PROPRIETARIO = "niltonrosa71@gmail.com"
 
-if email_usuario:
-    # Verificação de Proprietário
-    if email_usuario.lower() == PROPRIETARIO_EMAIL.lower():
-        st.success("👑 Bem-vindo, Proprietário! Acesso ILIMITADO liberado.")
-        limite_cortes = 20  # Você pode gerar muitos cortes de uma vez
+# Sidebar com Branding
+with st.sidebar:
+    st.image("https://cdn-icons-png.flaticon.com/512/3669/3669914.png", width=100) # Ícone Pro
+    st.title("CorteViral PRO")
+    st.write("---")
+    email = st.text_input("👤 Login de Usuário", placeholder="seu@email.com")
+
+# Corpo Principal
+if email:
+    if email.lower() == PROPRIETARIO.lower():
+        st.markdown(f"### 👑 Painel do Proprietário")
+        st.success("Acesso Ilimitado Liberado para Nilton Rosa.")
+        limite = 15 
         plano = "PRO"
     else:
-        st.info("Acesso Gratuito: 1 corte por vídeo (Limite de teste)")
-        limite_cortes = 1
+        st.markdown(f"### 🚀 Dashboard de Edição")
+        st.info("Plano: Gratuito (1 corte de teste)")
+        limite = 1
         plano = "FREE"
 
-    # --- 3. UPLOAD E PROCESSAMENTO ---
-    upload = st.file_uploader("Escolha seu vídeo longo", type=["mp4", "mov"])
+    col1, col2 = st.columns([1, 1])
+
+    with col1:
+        st.markdown("#### 📤 1. Carregar Conteúdo")
+        upload = st.file_uploader("", type=["mp4", "mov"])
+        
+    with col2:
+        st.markdown("#### 🛠️ 2. Configurações")
+        st.write(f"Cortes a serem gerados: **{limite}**")
+        st.write(f"Formato: **9:16 (TikTok/Reels/Shorts)**")
 
     if upload:
-        with open("video_temp.mp4", "wb") as f:
+        with open("video_input.mp4", "wb") as f:
             f.write(upload.getbuffer())
         
-        if st.button(f"Gerar {limite_cortes} Corte(s)"):
-            for i in range(limite_cortes):
+        if st.button("✨ GERAR CORTES VIRAIS AGORA"):
+            # Barra de progresso profissional
+            progresso = st.progress(0)
+            for i in range(limite):
                 inicio = i * 60
                 saida = f"corte_{i+1}.mp4"
                 
-                # Comando FFmpeg blindado contra vídeos corrompidos
-                comando = f'ffmpeg -y -ss {inicio} -t 59 -i video_temp.mp4 -vf "crop=ih*(9/16):ih,scale=1080:1920" -c:v libx264 -pix_fmt yuv420p -c:a aac -movflags +faststart {saida}'
+                # Motor FFmpeg Blindado
+                comando = f'ffmpeg -y -ss {inicio} -t 59 -i video_input.mp4 -vf "crop=ih*(9/16):ih,scale=1080:1920" -c:v libx264 -pix_fmt yuv420p -c:a aac -movflags +faststart {saida}'
+                subprocess.run(comando, shell=True)
                 
-                with st.spinner(f"Processando corte {i+1}..."):
-                    subprocess.run(comando, shell=True)
+                progresso.progress((i + 1) / limite)
+                st.write(f"✅ Corte {i+1} finalizado!")
                 
                 with open(saida, "rb") as f:
                     st.download_button(f"📥 Baixar Corte {i+1}", f, file_name=saida)
             
-            st.success("Cortes finalizados com sucesso!")
+            st.balloons()
+            st.success("Todos os vídeos foram processados com sucesso!")
+else:
+    st.warning("⚠️ Por favor, faça login com seu e-mail para desbloquear a ferramenta.")
